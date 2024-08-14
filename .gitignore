@@ -26,3 +26,4 @@ go.work.sum
 
 # jv binary
 jv
+dist/
