@@ -11,6 +11,16 @@ JV Tool is a command-line tool written in Go that helps you fetch your local and
 - GitHub Actions workflow to automate releases.
 - Branch protection to ensure code quality.
 
+
+## Installation
+
+You can use **homebrew** to install `jv` cli tool:
+```
+brew tap vndr/homebrew-jv
+brew install jv
+```
+After `jv` is installed, you can run `jv help` or `jv ip help` to see available options:
+
 ```
 $jv help
 
