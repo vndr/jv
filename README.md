@@ -78,8 +78,20 @@ To make changes to the project, follow this workflow:
 
 4. **Open a pull request** on GitHub from your branch into the **main** branch
 5. **Review and merge** the pull request after it meets all the branch protection rules.
+6. **Create tag** `git tag -a v0.1.0 -m"describe change"`
+7. **Push tag** `git push origin v0.1.0`
+8. **Run goReleaser locally** `goreleaser release -snapshot --clean`
+9. **Run goReleaser check** `goreleaser check` to check if configuration is valid
+10. **Run build locally** `goreleaser build --single-target`
 
-### 2. Set Up GoReleaser
+If all above pass, create new release:
+```
+gorelease release
+```
+
+## Tools
+
+### 1. Set Up GoReleaser
 
 1. **Install GoReleaser:**
    ```bash
@@ -133,8 +145,7 @@ To make changes to the project, follow this workflow:
    ```bash
    goreleaser release
 
-
-### 3. Configure GitHub Actions Workflow
+### 2. Configure GitHub Actions Workflow
 
 1. **Create a Workflow File:**
    
@@ -174,7 +185,7 @@ To make changes to the project, follow this workflow:
    - Name it **RELEASE_TOKEN**.
 
 
-### 4. Protect the `main` Branch
+### 3. Protect the `main` Branch
 
 To ensure that the **main** branch is protected and all changes go through a pull request:
 

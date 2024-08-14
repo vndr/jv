@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -16,13 +17,44 @@ import (
 )
 
 func getLocalIP(interfaceName string) {
-	cmd := exec.Command("ipconfig", "getifaddr", interfaceName)
+	var cmd *exec.Cmd
+
+	// Use different commands depending on the OS
+	if runtime.GOOS == "darwin" {
+		// macOS uses ipconfig
+		cmd = exec.Command("ipconfig", "getifaddr", interfaceName)
+	} else if runtime.GOOS == "linux" {
+		// Linux uses ip or ifconfig
+		cmd = exec.Command("ip", "addr", "show", interfaceName)
+	} else {
+		log.Fatalf("Unsupported OS: %s", runtime.GOOS)
+	}
+
 	out, err := cmd.Output()
 	if err != nil {
-		fmt.Println("Failed to retrieve IP address for interface:", interfaceName)
+		fmt.Printf("Failed to retrieve IP address for interface: %s\n", interfaceName)
 		log.Fatal(err)
 	}
-	fmt.Println("Local IP address:", string(out))
+
+	// For Linux, extract the IP address from the command output
+	if runtime.GOOS == "linux" {
+		// Find the line containing "inet" and extract the IP address
+		lines := strings.Split(string(out), "\n")
+		for _, line := range lines {
+			line = strings.TrimSpace(line)
+			if strings.HasPrefix(line, "inet ") {
+				// Example format: "inet 192.168.1.5/24 brd 192.168.1.255 scope global dynamic noprefixroute wlp0s20f3"
+				parts := strings.Fields(line)
+				if len(parts) > 1 {
+					fmt.Printf("Local IP address: %s\n", parts[1])
+					return
+				}
+			}
+		}
+		log.Fatalf("Failed to parse IP address from interface: %s\n", interfaceName)
+	} else {
+		fmt.Printf("Local IP address: %s\n", string(out))
+	}
 }
 
 func listNetworkInterfaces() []string {
@@ -64,14 +96,23 @@ func chooseInterface() string {
 
 func getLocalIPWithInterfaceCheck() {
 	interfaceName := "en0"
+	if runtime.GOOS == "linux" {
+		// You might want to use a more common interface name for Linux
+		interfaceName = "eth0"
+	}
+
 	cmd := exec.Command("ipconfig", "getifaddr", interfaceName)
+	if runtime.GOOS == "linux" {
+		cmd = exec.Command("ip", "addr", "show", interfaceName)
+	}
+
 	out, err := cmd.Output()
 	if err != nil {
 		fmt.Println("Interface does not exist or failed to retrieve local IP address.")
 		fmt.Println("Available network interfaces:")
 		interfaceName = chooseInterface()
 	} else {
-		fmt.Println("Local IP address for en0:", string(out))
+		fmt.Printf("Local IP address for %s: %s\n", interfaceName, string(out))
 		return
 	}
 
