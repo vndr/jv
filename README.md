@@ -4,27 +4,70 @@ JV Tool is a command-line tool written in Go that helps you fetch your local and
 
 ## Features
 
-- Fetch local IP address for a specific network interface.
-- Fetch public IP address using an external service.
+- Fetch local IP address for a specific network interface:
+`jv ip local`
+- Fetch public IP address using an external service: `jv ip public`
 - Cross-platform support (Linux, macOS, Windows).
 - GitHub Actions workflow to automate releases.
 - Branch protection to ensure code quality.
 
-## Getting Started
+```
+$jv help
 
-### 1. Push Your Project to GitHub
+A CLI tool to fetch IP addresses, both local and public.
 
-1. **Create a GitHub Repository:**
-   - Go to GitHub and create a new repository. Name it something like `jv`.
-   
-2. **Add Remote and Push Your Project:**
+Usage:
+  jv [command]
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  help        Help about any command
+  ip          IP related commands
+
+Flags:
+  -h, --help   help for jv
+
+Use "jv [command] --help" for more information about a command.
+```
+
+
+```
+$jv ip help
+
+IP related commands
+
+Usage:
+  jv ip [command]
+
+Available Commands:
+  local       Get the local IP address
+  public      Get the public IP address
+
+Flags:
+  -h, --help   help for ip
+
+Use "jv ip [command] --help" for more information about a command.
+```
+## How to contribute
+
+### 1. Workflow for Making Changes
+To make changes to the project, follow this workflow:
+
+1. **Create a new branch:**
    ```bash
-   git init
+   git checkout -b feature/my-feature
+
+2. **Make your changes and commit them:**
+   ```bash
    git add .
-   git commit -m "Initial commit"
-   git branch -M main
-   git remote add origin https://github.com/vndr/jv.git
-   git push -u origin main
+   git commit -m "Implement my new feature"
+
+3. **Push the branch to GitHub:**
+   ```bash
+   git push origin feature/my-feature
+
+4. **Open a pull request** on GitHub from your branch into the **main** branch
+5. **Review and merge** the pull request after it meets all the branch protection rules.
 
 ### 2. Set Up GoReleaser
 
@@ -138,24 +181,6 @@ To ensure that the **main** branch is protected and all changes go through a pul
 
 Click **Create** or **Save changes**.
 
-### 5. Workflow for Making Changes
-To make changes to the project, follow this workflow:
-
-1. **Create a new branch:**
-   ```bash
-   git checkout -b feature/my-feature
-
-2. **Make your changes and commit them:**
-   ```bash
-   git add .
-   git commit -m "Implement my new feature"
-
-3. **Push the branch to GitHub:**
-   ```bash
-   git push origin feature/my-feature
-
-4. **Open a pull request** on GitHub from your branch into the **main** branch
-5. **Review and merge** the pull request after it meets all the branch protection rules.
 
 ## License
 
