@@ -165,7 +165,11 @@ func main() {
 	ipCmd.AddCommand(localCmd)
 	ipCmd.AddCommand(publicCmd)
 
-	viper.BindPFlags(rootCmd.Flags())
+	// Handle the error from viper.BindPFlags
+	if err := viper.BindPFlags(rootCmd.Flags()); err != nil {
+		fmt.Fprintf(os.Stderr, "Error binding flags: %v\n", err)
+		os.Exit(1)
+	}
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)

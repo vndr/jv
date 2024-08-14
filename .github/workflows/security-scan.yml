@@ -1,0 +1,26 @@
+# .github/workflows/security-scan.yml
+name: Security Scan
+
+on:
+    pull_request:
+      branches:
+        - main
+        - develop
+        - release/*
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.22'
+
+      - name: Install GoSec
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
+
+      - name: Run GoSec
+        run: gosec ./...

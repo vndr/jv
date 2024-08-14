@@ -1,0 +1,27 @@
+# .github/workflows/build-verification.yml
+name: Build Verification
+
+on:
+    pull_request:
+      branches:
+        - main
+        - develop
+        - release/*
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.22'
+
+      - name: Build
+        run: go build -v ./...
