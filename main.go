@@ -16,7 +16,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var version = "0.1.4"
+var version = "0.1.7"
 
 func getLocalIP(interfaceName string) {
 	var cmd *exec.Cmd
