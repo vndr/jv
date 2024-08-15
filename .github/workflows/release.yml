@@ -86,7 +86,7 @@ jobs:
       - name: Generate Homebrew Formula from Template
         run: |
           cd homebrew-jv-repo
-          cp ../jv.rb.template jv.rb
+          cp jv.rb.template jv.rb
           sed -i "s/{{VERSION}}/${{ needs.release.outputs.version }}/g" jv.rb
           sed -i "s/{{SHA256_DARWIN_AMD64}}/${{ steps.calculate_sha256.outputs.darwin_amd64_sha256 }}/g" jv.rb
           sed -i "s/{{SHA256_DARWIN_ARM64}}/${{ steps.calculate_sha256.outputs.darwin_arm64_sha256 }}/g" jv.rb
