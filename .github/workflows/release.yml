@@ -26,9 +26,11 @@ jobs:
         with:
           go-version: 1.22
 
-      - name: Install Goreleaser
+      - name: Install GoReleaser via apt
         run: |
-          curl -sfL https://goreleaser.com/static/run | bash
+          echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | sudo tee /etc/apt/sources.list.d/goreleaser.list
+          sudo apt update
+          sudo apt install -y goreleaser
 
-      - name: Run Goreleaser
+      - name: Run GoReleaser
         run: goreleaser release
