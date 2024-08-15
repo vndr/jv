@@ -1,18 +1,8 @@
-# This is an example .goreleaser.yml file with some sensible defaults.
-# Make sure to check the documentation at https://goreleaser.com
-
-# The lines below are called `modelines`. See `:help modeline`
-# Feel free to remove those if you don't want/need to use them.
-# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-# vim: set ts=2 sw=2 tw=0 fo=cnqoj
-
 version: 2
 
 before:
   hooks:
-    # You may remove this if you don't use go modules.
     - go mod tidy
-    # you may remove this if you don't need go generate
     - go generate ./...
 
 builds:
@@ -22,10 +12,15 @@ builds:
       - linux
       - windows
       - darwin
+    goarch:
+      - amd64
+      - arm64
+    binaries:
+      - jv
+    ldflags: "-s -w"
 
 archives:
   - format: tar.gz
-    # this name template makes the OS and Arch compatible with the results of `uname`.
     name_template: >-
       {{ .ProjectName }}_
       {{- title .Os }}_
@@ -33,10 +28,27 @@ archives:
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
-    # use zip for windows archives
     format_overrides:
       - goos: windows
         format: zip
+
+nfpms:
+  - id: jv_deb
+    package_id: jv
+    bindir: /usr/local/bin
+    file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.deb"
+    formats:
+      - deb
+    dependencies:
+      - libc6
+    contents:
+      - src: ./README.md
+        dst: /usr/share/doc/jv/README.md
+    maintainer: "Your Name <your.email@example.com>"
+    vendor: "Your Organization"
+    license: "MIT"
+    homepage: "https://github.com/vndr/jv"
+    description: "JV IP Tool is a command-line tool for fetching IP addresses."
 
 changelog:
   sort: asc
