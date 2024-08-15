@@ -1,4 +1,4 @@
-module jv-ipaddr
+module github.com/vndr/jv
 
 go 1.22.4
 
