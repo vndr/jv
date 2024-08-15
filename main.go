@@ -178,11 +178,11 @@ func main() {
 	ipCmd.AddCommand(publicCmd)
 
 	rootCmd.PersistentFlags().BoolP("version", "v", false, "Print the version number of JV Tool")
-	rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
-		if versionFlag, _ := cmd.Flags().GetBool("version"); versionFlag {
-			fmt.Printf("JV Tool v%s\n", version)
-			os.Exit(0)
-		}
+
+	// Check if --version or -v flag is passed
+	if versionFlag, _ := rootCmd.PersistentFlags().GetBool("version"); versionFlag {
+		fmt.Printf("JV Tool v%s\n", version)
+		os.Exit(0)
 	}
 
 	// Handle the error from viper.BindPFlags
