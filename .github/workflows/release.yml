@@ -6,6 +6,9 @@ on:
       - "v*"  # Trigger on version tags
   workflow_dispatch: # Allows manual triggering
 
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Make GITHUB_TOKEN available for all jobs
+
 jobs:
   release:
     runs-on: self-hosted
