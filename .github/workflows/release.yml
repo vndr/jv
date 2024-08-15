@@ -32,6 +32,11 @@ jobs:
       - name: Run GoReleaser
         run: goreleaser release --clean
 
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gh
+
       - name: Get Release Info
         id: get_release
         run: |
@@ -56,9 +61,14 @@ jobs:
           echo "::set-output name=linux_amd64_sha256::$LINUX_AMD64_SHA256"
           echo "::set-output name=linux_arm64_sha256::$LINUX_ARM64_SHA256"
 
-      - name: Update Homebrew Formula
+      - name: Clone the homebrew-jv repository
         run: |
           git clone https://github.com/vndr/homebrew-jv.git
+          cd homebrew-jv
+          git checkout -b update-formula-${{ steps.get_release.outputs.version }}
+
+      - name: Update Homebrew Formula
+        run: |
           cd homebrew-jv
           FORMULA_PATH="jv.rb"
 
@@ -78,13 +88,16 @@ jobs:
           # Update the version field
           sed -i "s/version \".*\"/version \"${{ steps.get_release.outputs.version }}\"/" $FORMULA_PATH
 
-      - name: Create Pull Request in homebrew-jv
-        uses: peter-evans/create-pull-request@v3
-        with:
-          token: ${{ secrets.RELEASE_TOKEN }}
-          repository: vndr/homebrew-jv
-          commit-message: "Update JV formula to version ${{ steps.get_release.outputs.version }}"
-          branch: update-formula-${{ steps.get_release.outputs.version }}
-          title: "Update JV formula to version ${{ steps.get_release.outputs.version }}"
-          body: "This PR updates the JV formula to version ${{ steps.get_release.outputs.version }} with the correct download URLs and SHA256 checksums."
-          base: main
+      - name: Commit and Push Changes
+        run: |
+          cd homebrew-jv
+          git add jv.rb
+          git commit -m "Update JV formula to version ${{ steps.get_release.outputs.version }}"
+          git push origin update-formula-${{ steps.get_release.outputs.version }}
+
+      - name: Create Pull Request
+        run: |
+          cd homebrew-jv
+          gh pr create --title "Update JV formula to version ${{ steps.get_release.outputs.version }}" \
+                       --body "This PR updates the JV formula to version ${{ steps.get_release.outputs.version }} with the correct download URLs and SHA256 checksums." \
+                       --base main --head update-formula-${{ steps.get_release.outputs.version }}
