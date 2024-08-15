@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/spf13/cobra"
 )
 
@@ -12,7 +15,17 @@ func NewRootCmd(version string) *cobra.Command {
 		Long:  `A CLI tool to fetch IP addresses, manage network interfaces, and more.`,
 	}
 
-	rootCmd.PersistentFlags().BoolP("version", "v", false, "Print the version number of JV Tool")
+	// Handle the --version flag explicitly
+	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		if versionFlag, _ := cmd.Flags().GetBool("version"); versionFlag {
+			fmt.Printf("JV Tool v%s\n", version)
+			os.Exit(0)
+		}
+		return nil
+	}
+
+	// Define the --version flag
+	//	rootCmd.PersistentFlags().BoolP("version", "v", false, "Print the version number of JV Tool")
 
 	// Add child commands
 	rootCmd.AddCommand(NewVersionCmd(version))

@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/vndr/jv/cmd"
-
 	"github.com/spf13/viper"
+	"github.com/vndr/jv/cmd"
 )
 
 var version = "0.1.16"
@@ -14,13 +13,7 @@ var version = "0.1.16"
 func main() {
 	rootCmd := cmd.NewRootCmd(version)
 
-	// Check if --version or -v flag is passed
-	if versionFlag, _ := rootCmd.PersistentFlags().GetBool("version"); versionFlag {
-		fmt.Printf("JV Tool v%s\n", version)
-		os.Exit(0)
-	}
-
-	// Handle the error from viper.BindPFlags
+	// Bind flags after defining them
 	if err := viper.BindPFlags(rootCmd.Flags()); err != nil {
 		fmt.Fprintf(os.Stderr, "Error binding flags: %v\n", err)
 		os.Exit(1)

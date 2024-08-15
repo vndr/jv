@@ -1,6 +1,9 @@
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+	"github.com/vndr/jv/pkg/ip"
+)
 
 // NewIPCmd creates the IP command.
 func NewIPCmd() *cobra.Command {
@@ -10,8 +13,8 @@ func NewIPCmd() *cobra.Command {
 	}
 
 	// Add child commands to ipCmd
-	ipCmd.AddCommand(NewLocalIPCmd())
-	ipCmd.AddCommand(NewPublicIPCmd())
+	ipCmd.AddCommand(NewLocalIPCmd(ip.GetLocalIPWithInterfaceCheck))
+	ipCmd.AddCommand(NewPublicIPCmd(ip.GetPublicIP))
 
 	return ipCmd
 }
