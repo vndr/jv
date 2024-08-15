@@ -9,7 +9,10 @@ on:
 jobs:
   release:
     runs-on: self-hosted
-
+        
+    env:
+      GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+    
     steps:
       - uses: actions/checkout@v2
       - name: Set up Go
@@ -23,5 +26,3 @@ jobs:
 
       - name: Run Goreleaser
         run: goreleaser release
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
