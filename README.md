@@ -3,7 +3,7 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/vndr/jv?label=stable%20version)
 ![Build Status](https://github.com/vndr/jv/actions/workflows/go-tests.yml/badge.svg)
 ![Codecov](https://img.shields.io/codecov/c/github/vndr/jv)
-[![Go Report Card](https://goreportcard.com/badge/github.com/vndr/jv)](https://goreportcard.com/report/github.com/vndr/jv)
+![Go Report Card](https://goreportcard.com/badge/github.com/vndr/jv)
 ![GitHub](https://img.shields.io/github/license/vndr/jv)
 
 
