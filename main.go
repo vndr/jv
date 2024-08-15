@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var version = "0.1.9"
+var version = "0.1.16"
 
 func main() {
 	rootCmd := cmd.NewRootCmd(version)
