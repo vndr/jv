@@ -61,15 +61,15 @@ jobs:
           echo "::set-output name=linux_amd64_sha256::$LINUX_AMD64_SHA256"
           echo "::set-output name=linux_arm64_sha256::$LINUX_ARM64_SHA256"
 
-      - name: Clone the homebrew-jv repository
+      - name: Clone the homebrew-jv repository into a separate directory
         run: |
-          git clone https://github.com/vndr/homebrew-jv.git
-          cd homebrew-jv
+          git clone https://github.com/vndr/homebrew-jv.git homebrew-jv-repo
+          cd homebrew-jv-repo
           git checkout -b update-formula-${{ steps.get_release.outputs.version }}
 
       - name: Update Homebrew Formula
         run: |
-          cd homebrew-jv
+          cd homebrew-jv-repo
           FORMULA_PATH="jv.rb"
 
           # Update version, URLs, and SHA256 in the formula
@@ -90,14 +90,14 @@ jobs:
 
       - name: Commit and Push Changes
         run: |
-          cd homebrew-jv
+          cd homebrew-jv-repo
           git add jv.rb
           git commit -m "Update JV formula to version ${{ steps.get_release.outputs.version }}"
           git push origin update-formula-${{ steps.get_release.outputs.version }}
 
       - name: Create Pull Request
         run: |
-          cd homebrew-jv
+          cd homebrew-jv-repo
           gh pr create --title "Update JV formula to version ${{ steps.get_release.outputs.version }}" \
                        --body "This PR updates the JV formula to version ${{ steps.get_release.outputs.version }} with the correct download URLs and SHA256 checksums." \
                        --base main --head update-formula-${{ steps.get_release.outputs.version }}
