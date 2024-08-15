@@ -15,9 +15,8 @@ builds:
     goarch:
       - amd64
       - arm64
-    binaries:
-      - jv
     ldflags: "-s -w"
+    binary: jv  # This sets the output binary name
 
 archives:
   - format: tar.gz
@@ -33,12 +32,10 @@ archives:
         format: zip
 
 nfpms:
-  - id: jv_deb
-    package_id: jv
+  - formats:
+      - deb
     bindir: /usr/local/bin
     file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.deb"
-    formats:
-      - deb
     dependencies:
       - libc6
     contents:
