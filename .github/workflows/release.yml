@@ -9,9 +9,8 @@ on:
 jobs:
   release:
     runs-on: self-hosted
-
-    env:
-      GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }} # Set the token for all steps
+    outputs:
+      version: ${{ steps.get_release.outputs.version }}
 
     steps:
       - uses: actions/checkout@v2
@@ -32,24 +31,36 @@ jobs:
       - name: Run GoReleaser
         run: goreleaser release --clean
 
-      - name: Install GitHub CLI
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gh
-
       - name: Get Release Info
         id: get_release
         run: |
           VERSION=$(echo $GITHUB_REF | sed 's/refs\/tags\///')
           echo "::set-output name=version::$VERSION"
 
+  update-homebrew:
+    needs: release
+    runs-on: self-hosted
+
+    steps:
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gh
+
+      - name: Clone the homebrew-jv repository into a separate directory
+        run: |
+          git clone https://github.com/vndr/homebrew-jv.git homebrew-jv-repo
+          cd homebrew-jv-repo
+          git checkout -b update-formula-${{ needs.release.outputs.version }}
+
       - name: Calculate SHA256 for Artifacts
         id: calculate_sha256
         run: |
-          DARWIN_AMD64_URL="https://github.com/vndr/jv/releases/download/${{ steps.get_release.outputs.version }}/jv_Darwin_x86_64.tar.gz"
-          DARWIN_ARM64_URL="https://github.com/vndr/jv/releases/download/${{ steps.get_release.outputs.version }}/jv_Darwin_arm64.tar.gz"
-          LINUX_AMD64_URL="https://github.com/vndr/jv/releases/download/${{ steps.get_release.outputs.version }}/jv_Linux_x86_64.tar.gz"
-          LINUX_ARM64_URL="https://github.com/vndr/jv/releases/download/${{ steps.get_release.outputs.version }}/jv_Linux_arm64.tar.gz"
+          VERSION=${{ needs.release.outputs.version }}
+          DARWIN_AMD64_URL="https://github.com/vndr/jv/releases/download/$VERSION/jv_Darwin_x86_64.tar.gz"
+          DARWIN_ARM64_URL="https://github.com/vndr/jv/releases/download/$VERSION/jv_Darwin_arm64.tar.gz"
+          LINUX_AMD64_URL="https://github.com/vndr/jv/releases/download/$VERSION/jv_Linux_x86_64.tar.gz"
+          LINUX_ARM64_URL="https://github.com/vndr/jv/releases/download/$VERSION/jv_Linux_arm64.tar.gz"
 
           DARWIN_AMD64_SHA256=$(curl -Ls $DARWIN_AMD64_URL | sha256sum | awk '{print $1}')
           DARWIN_ARM64_SHA256=$(curl -Ls $DARWIN_ARM64_URL | sha256sum | awk '{print $1}')
@@ -61,43 +72,37 @@ jobs:
           echo "::set-output name=linux_amd64_sha256::$LINUX_AMD64_SHA256"
           echo "::set-output name=linux_arm64_sha256::$LINUX_ARM64_SHA256"
 
-      - name: Clone the homebrew-jv repository into a separate directory
-        run: |
-          git clone https://github.com/vndr/homebrew-jv.git homebrew-jv-repo
-          cd homebrew-jv-repo
-          git checkout -b update-formula-${{ steps.get_release.outputs.version }}
-
       - name: Update Homebrew Formula
         run: |
           cd homebrew-jv-repo
           FORMULA_PATH="jv.rb"
 
           # Update version, URLs, and SHA256 in the formula
-          sed -i "s|url \".*Darwin_x86_64.tar.gz\"|url \"https://github.com/vndr/jv/releases/download/${{ steps.get_release.outputs.version }}/jv_Darwin_x86_64.tar.gz\"|" $FORMULA_PATH
+          sed -i "s|url \".*Darwin_x86_64.tar.gz\"|url \"https://github.com/vndr/jv/releases/download/${{ needs.release.outputs.version }}/jv_Darwin_x86_64.tar.gz\"|" $FORMULA_PATH
           sed -i "s|sha256 \".*\"|sha256 \"${{ steps.calculate_sha256.outputs.darwin_amd64_sha256 }}\"|" $FORMULA_PATH
 
-          sed -i "s|url \".*Darwin_arm64.tar.gz\"|url \"https://github.com/vndr/jv/releases/download/${{ steps.get_release.outputs.version }}/jv_Darwin_arm64.tar.gz\"|" $FORMULA_PATH
+          sed -i "s|url \".*Darwin_arm64.tar.gz\"|url \"https://github.com/vndr/jv/releases/download/${{ needs.release.outputs.version }}/jv_Darwin_arm64.tar.gz\"|" $FORMULA_PATH
           sed -i "s|sha256 \".*\"|sha256 \"${{ steps.calculate_sha256.outputs.darwin_arm64_sha256 }}\"|" $FORMULA_PATH
 
-          sed -i "s|url \".*Linux_x86_64.tar.gz\"|url \"https://github.com/vndr/jv/releases/download/${{ steps.get_release.outputs.version }}/jv_Linux_x86_64.tar.gz\"|" $FORMULA_PATH
+          sed -i "s|url \".*Linux_x86_64.tar.gz\"|url \"https://github.com/vndr/jv/releases/download/${{ needs.release.outputs.version }}/jv_Linux_x86_64.tar.gz\"|" $FORMULA_PATH
           sed -i "s|sha256 \".*\"|sha256 \"${{ steps.calculate_sha256.outputs.linux_amd64_sha256 }}\"|" $FORMULA_PATH
 
-          sed -i "s|url \".*Linux_arm64.tar.gz\"|url \"https://github.com/vndr/jv/releases/download/${{ steps.get_release.outputs.version }}/jv_Linux_arm64.tar.gz\"|" $FORMULA_PATH
+          sed -i "s|url \".*Linux_arm64.tar.gz\"|url \"https://github.com/vndr/jv/releases/download/${{ needs.release.outputs.version }}/jv_Linux_arm64.tar.gz\"|" $FORMULA_PATH
           sed -i "s|sha256 \".*\"|sha256 \"${{ steps.calculate_sha256.outputs.linux_arm64_sha256 }}\"|" $FORMULA_PATH
 
           # Update the version field
-          sed -i "s/version \".*\"/version \"${{ steps.get_release.outputs.version }}\"/" $FORMULA_PATH
+          sed -i "s/version \".*\"/version \"${{ needs.release.outputs.version }}\"/" $FORMULA_PATH
 
       - name: Commit and Push Changes
         run: |
           cd homebrew-jv-repo
           git add jv.rb
-          git commit -m "Update JV formula to version ${{ steps.get_release.outputs.version }}"
-          git push origin update-formula-${{ steps.get_release.outputs.version }}
+          git commit -m "Update JV formula to version ${{ needs.release.outputs.version }}"
+          git push origin update-formula-${{ needs.release.outputs.version }}
 
       - name: Create Pull Request
         run: |
           cd homebrew-jv-repo
-          gh pr create --title "Update JV formula to version ${{ steps.get_release.outputs.version }}" \
-                       --body "This PR updates the JV formula to version ${{ steps.get_release.outputs.version }} with the correct download URLs and SHA256 checksums." \
-                       --base main --head update-formula-${{ steps.get_release.outputs.version }}
+          gh pr create --title "Update JV formula to version ${{ needs.release.outputs.version }}" \
+                       --body "This PR updates the JV formula to version ${{ needs.release.outputs.version }} with the correct download URLs and SHA256 checksums." \
+                       --base main --head update-formula-${{ needs.release.outputs.version }}
