@@ -83,41 +83,27 @@ jobs:
           git config --global user.email "info@vndr.net"
           git config --global user.name "vndr"
 
-      - name: Update Homebrew Formula
+      - name: Generate Homebrew Formula from Template
         run: |
           cd homebrew-jv-repo
-          FORMULA_PATH="jv.rb"
-
-          # Update the correct version and sha256 values for each architecture
-          sed -i "s/version \".*\"/version \"${{ steps.calculate_sha256.outputs.version }}\"/" $FORMULA_PATH
-
-          # Replace Darwin x86_64
-          sed -i "0,/url \".*Darwin_x86_64.tar.gz\"/s//url \"https:\/\/github.com\/vndr\/jv\/releases\/download\/${{ steps.calculate_sha256.outputs.version }}\/jv_Darwin_x86_64.tar.gz\"/" $FORMULA_PATH
-          sed -i "0,/sha256 \".*\"/s//sha256 \"${{ steps.calculate_sha256.outputs.darwin_amd64_sha256 }}\"/" $FORMULA_PATH
-
-          # Replace Darwin arm64
-          sed -i "0,/url \".*Darwin_arm64.tar.gz\"/s//url \"https:\/\/github.com\/vndr\/jv\/releases\/download\/${{ steps.calculate_sha256.outputs.version }}\/jv_Darwin_arm64.tar.gz\"/" $FORMULA_PATH
-          sed -i "0,/sha256 \".*\"/s//sha256 \"${{ steps.calculate_sha256.outputs.darwin_arm64_sha256 }}\"/" $FORMULA_PATH
-
-          # Replace Linux x86_64
-          sed -i "0,/url \".*Linux_x86_64.tar.gz\"/s//url \"https:\/\/github.com\/vndr\/jv\/releases\/download\/${{ steps.calculate_sha256.outputs.version }}\/jv_Linux_x86_64.tar.gz\"/" $FORMULA_PATH
-          sed -i "0,/sha256 \".*\"/s//sha256 \"${{ steps.calculate_sha256.outputs.linux_amd64_sha256 }}\"/" $FORMULA_PATH
-
-          # Replace Linux arm64
-          sed -i "0,/url \".*Linux_arm64.tar.gz\"/s//url \"https:\/\/github.com\/vndr\/jv\/releases\/download\/${{ steps.calculate_sha256.outputs.version }}\/jv_Linux_arm64.tar.gz\"/" $FORMULA_PATH
-          sed -i "0,/sha256 \".*\"/s//sha256 \"${{ steps.calculate_sha256.outputs.linux_arm64_sha256 }}\"/" $FORMULA_PATH
+          cp ../jv.rb.template jv.rb
+          sed -i "s/{{VERSION}}/${{ needs.release.outputs.version }}/g" jv.rb
+          sed -i "s/{{SHA256_DARWIN_AMD64}}/${{ steps.calculate_sha256.outputs.darwin_amd64_sha256 }}/g" jv.rb
+          sed -i "s/{{SHA256_DARWIN_ARM64}}/${{ steps.calculate_sha256.outputs.darwin_arm64_sha256 }}/g" jv.rb
+          sed -i "s/{{SHA256_LINUX_AMD64}}/${{ steps.calculate_sha256.outputs.linux_amd64_sha256 }}/g" jv.rb
+          sed -i "s/{{SHA256_LINUX_ARM64}}/${{ steps.calculate_sha256.outputs.linux_arm64_sha256 }}/g" jv.rb
 
       - name: Commit and Push Changes
         run: |
           cd homebrew-jv-repo
           git remote set-url origin https://x-access-token:${{ secrets.RELEASE_TOKEN }}@github.com/vndr/homebrew-jv.git
           git add jv.rb
-          git commit -m "Update JV formula to version ${{ steps.calculate_sha256.outputs.version }}"
-          git push origin update-formula-${{ steps.calculate_sha256.outputs.version }}
+          git commit -m "Update JV formula to version ${{ needs.release.outputs.version }}"
+          git push origin update-formula-${{ needs.release.outputs.version }}
 
       - name: Create Pull Request
         run: |
           cd homebrew-jv-repo
-          gh pr create --title "Update JV formula to version ${{ steps.calculate_sha256.outputs.version }}" \
-                       --body "This PR updates the JV formula to version ${{ steps.calculate_sha256.outputs.version }} with the correct download URLs and SHA256 checksums." \
-                       --base main --head update-formula-${{ steps.calculate_sha256.outputs.version }}
+          gh pr create --title "Update JV formula to version ${{ needs.release.outputs.version }}" \
+                       --body "This PR updates the JV formula to version ${{ needs.release.outputs.version }} with the correct download URLs and SHA256 checksums." \
+                       --base main --head update-formula-${{ needs.release.outputs.version }}
