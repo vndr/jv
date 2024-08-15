@@ -18,7 +18,7 @@ jobs:
 
       - name: Install Goreleaser
         run: |
-          curl -sSfL https://goreleaser.com/install.sh | sh
+          curl -sfL https://goreleaser.com/static/run | bash VERSION=v2.2.0 -s -- check
 
       - name: Run Goreleaser
         run: goreleaser release
