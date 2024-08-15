@@ -32,5 +32,10 @@ jobs:
           sudo apt update
           sudo apt install -y goreleaser
 
+      - name: Install nfpm
+        run: |
+          curl -sSL https://github.com/goreleaser/nfpm/releases/download/v2.12.1/nfpm_2.12.1_linux_amd64.deb -o nfpm.deb
+          sudo dpkg -i nfpm.deb
+
       - name: Run GoReleaser
-        run: goreleaser release
+        run: goreleaser release --clean
