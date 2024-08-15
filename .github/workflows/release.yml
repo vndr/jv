@@ -38,7 +38,7 @@ jobs:
         id: get_release
         run: |
           VERSION=$(echo $GITHUB_REF | sed 's/refs\/tags\///')
-          echo "::set-output name=version::$VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
   update-homebrew:
     needs: release
@@ -70,10 +70,10 @@ jobs:
           LINUX_AMD64_SHA256=$(curl -Ls $LINUX_AMD64_URL | sha256sum | awk '{print $1}')
           LINUX_ARM64_SHA256=$(curl -Ls $LINUX_ARM64_URL | sha256sum | awk '{print $1}')
 
-          echo "::set-output name=darwin_amd64_sha256::$DARWIN_AMD64_SHA256"
-          echo "::set-output name=darwin_arm64_sha256::$DARWIN_ARM64_SHA256"
-          echo "::set-output name=linux_amd64_sha256::$LINUX_AMD64_SHA256"
-          echo "::set-output name=linux_arm64_sha256::$LINUX_ARM64_SHA256"
+          echo "darwin_amd64_sha256=$DARWIN_AMD64_SHA256" >> $GITHUB_OUTPUT
+          echo "darwin_arm64_sha256=$DARWIN_ARM64_SHA256" >> $GITHUB_OUTPUT
+          echo "linux_amd64_sha256=$LINUX_AMD64_SHA256" >> $GITHUB_OUTPUT
+          echo "linux_arm64_sha256=$LINUX_ARM64_SHA256" >> $GITHUB_OUTPUT
 
       - name: Configure Git User
         run: |
@@ -85,7 +85,7 @@ jobs:
           cd homebrew-jv-repo
           FORMULA_PATH="jv.rb"
 
-          # Update version, URLs, and SHA256 in the formula
+          # Update the correct sha256 values
           sed -i "s|url \".*Darwin_x86_64.tar.gz\"|url \"https://github.com/vndr/jv/releases/download/${{ needs.release.outputs.version }}/jv_Darwin_x86_64.tar.gz\"|" $FORMULA_PATH
           sed -i "s|sha256 \".*\"|sha256 \"${{ steps.calculate_sha256.outputs.darwin_amd64_sha256 }}\"|" $FORMULA_PATH
 
@@ -97,9 +97,6 @@ jobs:
 
           sed -i "s|url \".*Linux_arm64.tar.gz\"|url \"https://github.com/vndr/jv/releases/download/${{ needs.release.outputs.version }}/jv_Linux_arm64.tar.gz\"|" $FORMULA_PATH
           sed -i "s|sha256 \".*\"|sha256 \"${{ steps.calculate_sha256.outputs.linux_arm64_sha256 }}\"|" $FORMULA_PATH
-
-          # Update the version field
-          sed -i "s/version \".*\"/version \"${{ needs.release.outputs.version }}\"/" $FORMULA_PATH
 
       - name: Commit and Push Changes
         run: |
