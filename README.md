@@ -1,5 +1,12 @@
 # jv
 
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/vndr/jv?label=stable%20version)
+![Build Status](https://github.com/vndr/jv/actions/workflows/go-tests.yml/badge.svg)
+![Codecov](https://img.shields.io/codecov/c/github/vndr/jv)
+![Go Report Card](https://goreportcard.com/badge/github.com/vndr/jv)
+![GitHub](https://img.shields.io/github/license/vndr/jv)
+
+
 JV Tool is a command-line tool written in Go that helps you fetch your local and public IP addresses. It is designed to be cross-platform and can be easily released and distributed using GoReleaser.
 
 ## Features
