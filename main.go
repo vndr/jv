@@ -16,6 +16,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+var version = "0.1.4"
+
 func getLocalIP(interfaceName string) {
 	var cmd *exec.Cmd
 
@@ -140,6 +142,15 @@ func main() {
 		Long:  `A CLI tool to fetch IP addresses, both local and public.`,
 	}
 
+	var versionCmd = &cobra.Command{
+		Use:   "version",
+		Short: "Print the version number of JV Tool",
+		Long:  `All software has versions. This is JV Tool's version.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Printf("JV Tool v%s\n", version)
+		},
+	}
+
 	var ipCmd = &cobra.Command{
 		Use:   "ip",
 		Short: "IP related commands",
@@ -162,8 +173,17 @@ func main() {
 	}
 
 	rootCmd.AddCommand(ipCmd)
+	rootCmd.AddCommand(versionCmd)
 	ipCmd.AddCommand(localCmd)
 	ipCmd.AddCommand(publicCmd)
+
+	rootCmd.PersistentFlags().BoolP("version", "v", false, "Print the version number of JV Tool")
+
+	// Check if --version or -v flag is passed
+	if versionFlag, _ := rootCmd.PersistentFlags().GetBool("version"); versionFlag {
+		fmt.Printf("JV Tool v%s\n", version)
+		os.Exit(0)
+	}
 
 	// Handle the error from viper.BindPFlags
 	if err := viper.BindPFlags(rootCmd.Flags()); err != nil {
